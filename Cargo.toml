@@ -1,0 +1,33 @@
+[package]
+name = "ohy"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+wry = { version = "0.48", default-features = false, features = [
+    "os-webview",
+    "protocol",
+    "drag-drop",
+] }
+[target.'cfg(target_os = "linux")'.dependencies]
+wry = { version = "0.48", features = [
+    "os-webview",
+    "protocol",
+    "drag-drop",
+    "linux-body",
+] }
+tao = { version = "0.31", features = ["rwh_05"] }
+argh = "0.1"
+dirs = "6"
+reqwest = { version = "0.12", features = ["blocking"] }
+image = { version = "0.25", features = ["png"] }
+anyhow = "1.0"
+md5 = "0.7"
+
+[profile.release]
+incremental = true
+debug = 0
+lto = true
+opt-level = "z"
+panic = "abort"
+codegen-units = 1
