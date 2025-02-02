@@ -1,12 +1,12 @@
 use anyhow::{Context, Result};
-use image::GenericImageView;
-use tao::{
+use dioxus::desktop::tao::{
     dpi::LogicalSize,
     event,
     event_loop::{self, ControlFlow, EventLoop},
     window::{Icon, WindowBuilder},
 };
-use wry::{WebContext, WebViewBuilder};
+use dioxus::desktop::wry::{WebContext, WebViewBuilder};
+use image::GenericImageView;
 
 use argh::FromArgs;
 use reqwest::Url;
@@ -33,22 +33,42 @@ pub fn main() -> Result<()> {
         .join(conf.get_webview_dir());
 
     let mut web_context = WebContext::new(Some(context_dir));
-    let builder = if let Some(user_agent) = conf.user_agent {
-        WebViewBuilder::with_web_context(&mut web_context)
-            .with_user_agent(user_agent)
-            .with_url(&conf.url)
-    } else {
-        WebViewBuilder::with_web_context(&mut web_context).with_url(&conf.url)
-    };
 
     #[cfg(not(target_os = "linux"))]
-    let _webview = builder.build(&window).unwrap();
+    let _web_view = {
+        if let Some(user_agent) = conf.user_agent {
+            WebViewBuilder::new(&window)
+                .with_url(conf.url)
+                .with_user_agent(user_agent)
+                .with_web_context(&mut web_context)
+                .build()
+                .unwrap()
+        } else {
+            WebViewBuilder::new(&window)
+                .with_url(conf.url)
+                .with_web_context(&mut web_context)
+                .build()
+                .unwrap()
+        }
+    };
 
     #[cfg(target_os = "linux")]
     let _webview = {
-        use tao::platform::unix::WindowExtUnix;
-        use wry::WebViewBuilderExtUnix;
-        builder.build_gtk(window.default_vbox().unwrap()).unwrap()
+        use dioxus::desktop::{tao::platform::unix::WindowExtUnix, wry::WebViewBuilderExtUnix};
+        if let Some(user_agent) = conf.user_agent {
+            WebViewBuilder::new_gtk(window.default_vbox().unwrap())
+                .with_url(conf.url)
+                .with_user_agent(&user_agent)
+                .with_web_context(&mut web_context)
+                .build()
+                .unwrap()
+        } else {
+            WebViewBuilder::new_gtk(window.default_vbox().unwrap())
+                .with_url(conf.url)
+                .with_web_context(&mut web_context)
+                .build()
+                .unwrap()
+        }
     };
 
     event_loop.run(move |event, _, control_flow| {
