@@ -39,7 +39,7 @@ pub fn main() -> Result<()> {
         if let Some(user_agent) = conf.user_agent {
             WebViewBuilder::new(&window)
                 .with_url(conf.url)
-                .with_user_agent(user_agent)
+                .with_user_agent(&user_agent)
                 .with_web_context(&mut web_context)
                 .build()
                 .unwrap()
