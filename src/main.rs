@@ -4,10 +4,9 @@ use tao::{
     dpi::LogicalSize,
     event,
     event_loop::{self, ControlFlow, EventLoop},
-    platform::unix::WindowExtUnix,
     window::{Icon, WindowBuilder},
 };
-use wry::{WebContext, WebViewBuilder, WebViewBuilderExtUnix};
+use wry::{WebContext, WebViewBuilder};
 
 use argh::FromArgs;
 use reqwest::Url;
@@ -41,7 +40,10 @@ pub fn main() -> Result<()> {
     #[cfg(not(target_os = "linux"))]
     let _webview = builder.build(&window).unwrap();
     #[cfg(target_os = "linux")]
-    let _webview = builder.build_gtk(window.default_vbox().unwrap()).unwrap();
+    let _webview = {
+        use wry::{platform::unix::WindowExtUnix, WebViewBuilderExtUnix};
+        builder.build_gtk(window.default_vbox().unwrap()).unwrap();
+    };
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = event_loop::ControlFlow::Wait;

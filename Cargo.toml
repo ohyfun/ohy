@@ -9,13 +9,6 @@ wry = { version = "0.48", default-features = false, features = [
     "protocol",
     "drag-drop",
 ] }
-[target.'cfg(target_os = "linux")'.dependencies]
-wry = { version = "0.48", features = [
-    "os-webview",
-    "protocol",
-    "drag-drop",
-    "linux-body",
-] }
 tao = { version = "0.31", features = ["rwh_05"] }
 argh = "0.1"
 dirs = "6"
@@ -23,6 +16,14 @@ reqwest = { version = "0.12", features = ["blocking"] }
 image = { version = "0.25", features = ["png"] }
 anyhow = "1.0"
 md5 = "0.7"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+wry = { version = "0.48", features = [
+    "os-webview",
+    "protocol",
+    "drag-drop",
+    "linux-body",
+] }
 
 [profile.release]
 incremental = true
