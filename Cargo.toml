@@ -1,7 +1,13 @@
 [package]
 name = "ohy"
 version = "0.1.0"
+authors = ["funohy <rustohy@gmail.com>"]
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/ohyfun/ohy"
+categories = ["command-line-utilities"]
+keywords = ["webview", "desktop", "app"]
+description = "a lightweight command-line tool that converts web into desktop app"
 
 [dependencies]
 wry = { version = "0.48", default-features = false, features = [
