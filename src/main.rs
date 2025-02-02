@@ -33,16 +33,22 @@ pub fn main() -> Result<()> {
         .join(conf.get_webview_dir());
 
     let mut web_context = WebContext::new(Some(context_dir));
-    let builder = WebViewBuilder::with_web_context(&mut web_context)
-        .with_user_agent(conf.get_user_agent())
-        .with_url(&conf.url);
+    let builder = if let Some(user_agent) = conf.user_agent {
+        WebViewBuilder::with_web_context(&mut web_context)
+            .with_user_agent(user_agent)
+            .with_url(&conf.url)
+    } else {
+        WebViewBuilder::with_web_context(&mut web_context).with_url(&conf.url)
+    };
 
     #[cfg(not(target_os = "linux"))]
     let _webview = builder.build(&window).unwrap();
+
     #[cfg(target_os = "linux")]
     let _webview = {
-        use wry::{platform::unix::WindowExtUnix, WebViewBuilderExtUnix};
-        builder.build_gtk(window.default_vbox().unwrap()).unwrap();
+        use tao::platform::unix::WindowExtUnix;
+        use wry::WebViewBuilderExtUnix;
+        builder.build_gtk(window.default_vbox().unwrap()).unwrap()
     };
 
     event_loop.run(move |event, _, control_flow| {
@@ -109,19 +115,6 @@ impl Conf {
         };
         format!("{}_{}", self.check_url_get_host().unwrap(), name_default)
     }
-
-    fn get_user_agent(&self) -> &str {
-        if let Some(ua) = &self.user_agent {
-            ua
-        } else {
-            #[cfg(target_os = "linux")]
-            let ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.3";
-
-            #[cfg(not(target_os = "linux"))]
-            let ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.3";
-            ua
-        }
-    }
 }
 
 fn get_icon(url: &str) -> Option<Icon> {
@@ -150,10 +143,10 @@ fn fetch_icon(url: &str) -> Result<Icon> {
 }
 
 fn create_save_dir_str(input: &str) -> String {
-    // safe dir str [0-9a-zA-Z,-,_]
+    // safe dir str [0-9a-zA-Z-_]
     let is_valid = input
         .chars()
-        .all(|c| c.is_ascii_alphanumeric() || c == ',' || c == '_' || c == '-');
+        .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-');
 
     if is_valid {
         input.to_string()
