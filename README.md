@@ -75,16 +75,20 @@ although there might be some bugs with crate imports. Mac users are welcome to s
 
 ## screenshot
 
-linux
-![app-context-dir](https://github.com/user-attachments/assets/c7297da3-9335-4d6b-b3f8-d27216557624)
-![ohy-icon](https://github.com/user-attachments/assets/fc092cdd-005b-4d81-9525-c0e92dfedd7b)
-![qwen-dark](https://github.com/user-attachments/assets/02eeba87-62b8-420a-a727-b8033a5c1bc0)
+### linux
 ![qwen](https://github.com/user-attachments/assets/eec15bdd-f1fa-4364-bd5c-e6229b70a46b)
+![qwen-dark](https://github.com/user-attachments/assets/02eeba87-62b8-420a-a727-b8033a5c1bc0)
+![ohy-icon](https://github.com/user-attachments/assets/fc092cdd-005b-4d81-9525-c0e92dfedd7b)
+> linux app cache data directory `$HOME/.config/ohy/*`
 
-windows
+![app-context-dir](https://github.com/user-attachments/assets/c7297da3-9335-4d6b-b3f8-d27216557624)
+
+### windows
 ![app1](https://github.com/user-attachments/assets/1a5d86a9-0408-4fe3-b380-87635d7d44cd)
 ![app2](https://github.com/user-attachments/assets/07fa2e21-d825-44d7-bd87-4009db4dd388)
 ![app3](https://github.com/user-attachments/assets/73c990ca-719b-4696-ae98-105e52012ef7)
 ![dark-mode](https://github.com/user-attachments/assets/8585f8ca-7e50-42c8-a520-df9bca5b3691)
 ![icon](https://github.com/user-attachments/assets/d6897c82-8df1-43e2-8c0c-6a0e2dd8ce21)
+> windows app cache data directory `C:\Users\$USER_NAME\AppData\Roaming\ohy\*`
+
 ![web-content](https://github.com/user-attachments/assets/3c4a20d8-17d9-48c6-8259-36de75380772)
