@@ -1,8 +1,8 @@
 [package]
 name = "ohy"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["funohy <rustohy@gmail.com>"]
-edition = "2021"
+edition = "2024"
 license = "MIT"
 repository = "https://github.com/ohyfun/ohy"
 categories = ["command-line-utilities"]
@@ -10,26 +10,14 @@ keywords = ["webview", "desktop", "app"]
 description = "a lightweight command-line tool that converts web into desktop app"
 
 [dependencies]
-wry = { version = "0.48", default-features = false, features = [
-    "os-webview",
-    "protocol",
-    "drag-drop",
-] }
-tao = { version = "0.31", features = ["rwh_05"] }
+tao = "0.34"
+wry = "0.53"
 argh = "0.1"
 dirs = "6"
 reqwest = { version = "0.12", features = ["blocking"] }
 image = { version = "0.25", features = ["png"] }
 anyhow = "1.0"
 md5 = "0.7"
-
-[target.'cfg(target_os = "linux")'.dependencies]
-wry = { version = "0.48", features = [
-    "os-webview",
-    "protocol",
-    "drag-drop",
-    "linux-body",
-] }
 
 [profile.release]
 incremental = true

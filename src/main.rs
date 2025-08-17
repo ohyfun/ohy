@@ -2,9 +2,9 @@ use anyhow::{Context, Result};
 use image::GenericImageView;
 use tao::{
     dpi::LogicalSize,
-    event,
-    event_loop::{self, ControlFlow, EventLoop},
+    event_loop::{ControlFlow, EventLoop},
     window::{Icon, WindowBuilder},
+    event::{Event, WindowEvent},
 };
 use wry::{WebContext, WebViewBuilder};
 
@@ -21,11 +21,9 @@ pub fn main() -> Result<()> {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_title(conf.get_name())
-        .with_window_icon(get_icon(&conf.url))
+        .with_window_icon(fetch_icon(&conf.url).ok())
         .with_inner_size(LogicalSize::new(conf.width, conf.height))
-        .build(&event_loop)
-        .unwrap();
-
+        .build(&event_loop)?;
     // webContext
     let context_dir = dirs::config_dir()
         .unwrap()
@@ -33,28 +31,46 @@ pub fn main() -> Result<()> {
         .join(conf.get_webview_dir());
 
     let mut web_context = WebContext::new(Some(context_dir));
+
+    let _builder = WebViewBuilder::new_with_web_context(&mut web_context)
+        .with_clipboard(true)
+        .with_url(&conf.url)
+        .with_new_window_req_handler(|_url, _features| {
+            dbg!("new window req: {_url} {_features:?}");
+            wry::NewWindowResponse::Allow
+        });
+
     let builder = if let Some(user_agent) = conf.user_agent {
-        WebViewBuilder::with_web_context(&mut web_context)
-            .with_user_agent(user_agent)
-            .with_url(&conf.url)
+        _builder.with_user_agent(user_agent)
     } else {
-        WebViewBuilder::with_web_context(&mut web_context).with_url(&conf.url)
+        _builder
     };
 
-    #[cfg(not(target_os = "linux"))]
-    let _webview = builder.build(&window).unwrap();
-
-    #[cfg(target_os = "linux")]
+    #[cfg(any(
+        target_os = "windows",
+        target_os = "macos",
+        target_os = "ios",
+        target_os = "android"
+    ))]
+    let _webview = builder.build(&window)?;
+    #[cfg(not(any(
+        target_os = "windows",
+        target_os = "macos",
+        target_os = "ios",
+        target_os = "android"
+    )))]
     let _webview = {
         use tao::platform::unix::WindowExtUnix;
         use wry::WebViewBuilderExtUnix;
-        builder.build_gtk(window.default_vbox().unwrap()).unwrap()
+        let vbox = window.default_vbox().unwrap();
+        builder.build_gtk(vbox)?
     };
 
     event_loop.run(move |event, _, control_flow| {
-        *control_flow = event_loop::ControlFlow::Wait;
-        if let event::Event::WindowEvent {
-            event: event::WindowEvent::CloseRequested,
+        *control_flow = ControlFlow::Wait;
+
+        if let Event::WindowEvent {
+            event: WindowEvent::CloseRequested,
             ..
         } = event
         {
@@ -79,7 +95,7 @@ struct Conf {
     width: i32,
 
     /// height default 780
-    #[argh(option, default = "780", short = 'h')]
+    #[argh(option, default = "800", short = 'h')]
     height: i32,
 
     /// user agent
@@ -97,12 +113,12 @@ impl Conf {
     }
 
     fn check_url_get_host(&self) -> Option<String> {
-        if let Ok(uri) = Url::parse(&self.url) {
-            if let Some(host) = uri.host_str() {
-                let scheme = uri.scheme();
-                if scheme.eq_ignore_ascii_case("https") || scheme.eq_ignore_ascii_case("http") {
-                    return Some(host.to_owned());
-                }
+        if let Ok(uri) = Url::parse(&self.url)
+            && let Some(host) = uri.host_str()
+        {
+            let scheme = uri.scheme();
+            if scheme.eq_ignore_ascii_case("https") || scheme.eq_ignore_ascii_case("http") {
+                return Some(host.to_owned());
             }
         }
         None
@@ -117,18 +133,13 @@ impl Conf {
     }
 }
 
-fn get_icon(url: &str) -> Option<Icon> {
-    if let Ok(icon) = fetch_icon(url) {
-        Some(icon)
-    } else {
-        None
-    }
-}
-
 fn fetch_icon(url: &str) -> Result<Icon> {
     // google favicon api
-    let url = format!("https://t{}.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=64&url={}"
-        , (url.len() % 3 + 1), url);
+    let url = format!(
+        "https://t{}.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=64&url={}",
+        (url.len() % 3 + 1),
+        url
+    );
     let res = reqwest::blocking::get(url)?;
     let img_data = res.bytes()?;
     let img = image::load_from_memory(&img_data)?;
